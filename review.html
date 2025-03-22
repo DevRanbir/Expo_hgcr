@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Gesture Controlled Robotics - Expo Feedback</title>
+    <!-- Add base tag to handle subdirectory path -->
+    <base href="./">
+    <style>
+        :root {
+            --primary: #4a6cf7;
+            --secondary: #6c7ee1;
+            --background: #ffffff;
+            --text: #333;
+            --card: #ffffff;
+            --shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+            --border: #e8e8e8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 2.2rem;
+        }
+
+        .header p {
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .card {
+            background-color: var(--card);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .form-group.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            border-color: var(--secondary);
+        }
+
+        .radio-option.active {
+            border-color: var(--primary);
+            background-color: rgba(74, 108, 247, 0.05);
+        }
+
+        .radio-option input {
+            display: none;
+        }
+
+        .radio-option span {
+            margin-left: 8px;
+        }
+
+        .stars {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .stars input {
+            display: none;
+        }
+
+        .stars label {
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23cccccc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'%3e%3c/polygon%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 35px;
+            transition: all 0.2s ease;
+        }
+
+        .stars input:checked ~ label,
+        .stars label:hover,
+        .stars label:hover ~ label {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='%23ffc107' stroke='%23ffc107' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolygon points='12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2'%3e%3c/polygon%3e%3c/svg%3e");
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 100px;
+            transition: border-color 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            display: block;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 108, 247, 0.3);
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .progress-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .step {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ddd;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+
+        .step.active {
+            background-color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 150px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .feedback-items {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .feedback-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+        }
+
+        .feedback-item .meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .feedback-item .stars-display {
+            color: #ffc107;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .feedback-item p {
+            margin: 0;
+            color: #555;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+            }
+            
+            .stat-card {
+                width: 100%;
+            }
+            
+            .radio-group {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .card {
+                padding: 15px;
+            }
+            
+            .btn {
+                padding: 10px 16px;
+            }
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            background-color: #d4edda;
+            border-radius: 8px;
+            color: #155724;
+            margin-bottom: 20px;
+        }
+
+        #feedback-form {
+            display: block;
+        }
+
+        #feedback-results {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="main-container">
+        <div id="feedback-form">
+            <div class="header">
+                <h1>Hand Gesture Controlled Robotics</h1>
+                <p>Thank you for visiting our expo! Please take a moment to share your feedback.</p>
+            </div>
+
+            <div class="card">
+                <div class="success-message" id="success-message">
+                    Thank you! Your feedback has been submitted successfully.
+                </div>
+                
+                <div class="progress-indicator">
+                    <div class="step step-1 active"></div>
+                    <div class="step step-2"></div>
+                    <div class="step step-3"></div>
+                </div>
+                
+                <div class="form-group group-1 active">
+                    <label>How would you rate our project?</label>
+                    <div class="stars">
+                        <input type="radio" id="star5" name="rating" value="5" required>
+                        <label for="star5" title="5 stars"></label>
+                        
+                        <input type="radio" id="star4" name="rating" value="4">
+                        <label for="star4" title="4 stars"></label>
+                        
+                        <input type="radio" id="star3" name="rating" value="3">
+                        <label for="star3" title="3 stars"></label>
+                        
+                        <input type="radio" id="star2" name="rating" value="2">
+                        <label for="star2" title="2 stars"></label>
+                        
+                        <input type="radio" id="star1" name="rating" value="1">
+                        <label for="star1" title="1 star"></label>
+                    </div>
+                </div>
+
+                <div class="form-group group-2">
+                    <label>Who are you?</label>
+                    <div class="radio-group">
+                        <label class="radio-option" id="student-option">
+                            <input type="radio" name="user-type" value="student" required>
+                            <span>Student</span>
+                        </label>
+                        <label class="radio-option" id="faculty-option">
+                            <input type="radio" name="user-type" value="faculty" required>
+                            <span>Faculty</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group group-3">
+                    <label for="comments">Additional Comments (Optional)</label>
+                    <textarea id="comments" placeholder="Share your thoughts about our project..."></textarea>
+                    <div class="nav-buttons" style="margin-top: 20px;">
+                        <button class="btn" id="submit-btn">Submit Feedback</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="back-link">
+                <a href="#submissions" id="view-results">View all feedback submissions</a>
+            </div>
+        </div>
+
+        <div id="feedback-results" style="display: none;">
+            <div class="header">
+                <h1>Hand Gesture Controlled Robotics</h1>
+                <p>Feedback Submissions</p>
+            </div>
+
+            <div class="card">
+                <div class="stats">
+                    <div class="stat-card">
+                        <h3 id="total-count">0</h3>
+                        <p>Total Responses</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="avg-rating">0.0</h3>
+                        <p>Average Rating</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="student-count">0</h3>
+                        <p>Student Responses</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="faculty-count">0</h3>
+                        <p>Faculty Responses</p>
+                    </div>
+                </div>
+                
+                <div class="feedback-items" id="feedback-items">
+                    <!-- Feedback items will be dynamically added here -->
+                </div>
+            </div>
+
+            <div class="back-link">
+                <a href="#" id="return-to-form">Return to feedback form</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create a unique local storage key for this project to avoid conflicts
+        const STORAGE_KEY = 'handGestureFeedbackData';
+        
+        // Initialize local storage on first visit
+        if (!localStorage.getItem(STORAGE_KEY)) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+        }
+
+        // DOM elements
+        const studentOption = document.getElementById('student-option');
+        const facultyOption = document.getElementById('faculty-option');
+        const submitBtn = document.getElementById('submit-btn');
+        const successMessage = document.getElementById('success-message');
+        const viewResultsLink = document.getElementById('view-results');
+        const returnToFormLink = document.getElementById('return-to-form');
+        const feedbackForm = document.getElementById('feedback-form');
+        const feedbackResults = document.getElementById('feedback-results');
+        
+        // Form groups
+        const group1 = document.querySelector('.group-1');
+        const group2 = document.querySelector('.group-2');
+        const group3 = document.querySelector('.group-3');
+        
+        // Progress steps
+        const step1 = document.querySelector('.step-1');
+        const step2 = document.querySelector('.step-2');
+        const step3 = document.querySelector('.step-3');
+        
+        // Form state
+        let selectedRating = null;
+        let selectedUserType = null;
+        
+        // Check URL hash to show appropriate view
+        function checkHash() {
+            if (window.location.hash === '#submissions') {
+                feedbackForm.style.display = 'none';
+                feedbackResults.style.display = 'block';
+                loadFeedbackData();
+            } else {
+                feedbackForm.style.display = 'block';
+                feedbackResults.style.display = 'none';
+            }
+        }
+        
+        // Load feedback data for results page
+        function loadFeedbackData() {
+            const feedbackData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            
+            // Update statistics
+            document.getElementById('total-count').textContent = feedbackData.length;
+            
+            const avgRating = feedbackData.length > 0 
+                ? (feedbackData.reduce((sum, item) => sum + item.rating, 0) / feedbackData.length).toFixed(1) 
+                : '0.0';
+            document.getElementById('avg-rating').textContent = avgRating;
+            
+            const studentCount = feedbackData.filter(item => item.userType === 'student').length;
+            document.getElementById('student-count').textContent = studentCount;
+            
+            const facultyCount = feedbackData.filter(item => item.userType === 'faculty').length;
+            document.getElementById('faculty-count').textContent = facultyCount;
+            
+            // Populate feedback items
+            const feedbackItemsContainer = document.getElementById('feedback-items');
+            feedbackItemsContainer.innerHTML = '';
+            
+            if (feedbackData.length === 0) {
+                feedbackItemsContainer.innerHTML = '<p style="text-align: center; padding: 20px;">No feedback submitted yet.</p>';
+            } else {
+                // Sort by newest first
+                feedbackData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                feedbackData.forEach(item => {
+                    const formattedDate = new Date(item.timestamp).toLocaleDateString(undefined, {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    const stars = '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating);
+                    
+                    const feedbackItem = document.createElement('div');
+                    feedbackItem.className = 'feedback-item';
+                    feedbackItem.innerHTML = `
+                        <div class="meta">
+                            <span>${item.userType.charAt(0).toUpperCase() + item.userType.slice(1)}</span>
+                            <span>${formattedDate}</span>
+                        </div>
+                        <div class="stars-display">${stars}</div>
+                        ${item.comments ? `<p>${item.comments}</p>` : '<p><em>No additional comments</em></p>'}
+                    `;
+                    
+                    feedbackItemsContainer.appendChild(feedbackItem);
+                });
+            }
+        }
+        
+        // Event listeners for navigation
+        viewResultsLink.addEventListener('click', function(e) {
+            window.location.hash = 'submissions';
+            checkHash();
+        });
+        
+        returnToFormLink.addEventListener('click', function(e) {
+            window.location.hash = '';
+            checkHash();
+        });
+        
+        // Step 1: Rating selection - auto advance
+        document.querySelectorAll('input[name="rating"]').forEach(input => {
+            input.addEventListener('change', function() {
+                selectedRating = this.value;
+                // Auto advance after short delay
+                setTimeout(function() {
+                    group1.classList.remove('active');
+                    group2.classList.add('active');
+                    step1.classList.remove('active');
+                    step2.classList.add('active');
+                }, 500);
+            });
+        });
+        
+        // Step 2: User type selection - auto advance
+        studentOption.addEventListener('click', function() {
+            studentOption.classList.add('active');
+            facultyOption.classList.remove('active');
+            document.querySelector('input[value="student"]').checked = true;
+            selectedUserType = 'student';
+            // Auto advance after short delay
+            setTimeout(function() {
+                group2.classList.remove('active');
+                group3.classList.add('active');
+                step2.classList.remove('active');
+                step3.classList.add('active');
+            }, 500);
+        });
+
+        facultyOption.addEventListener('click', function() {
+            facultyOption.classList.add('active');
+            studentOption.classList.remove('active');
+            document.querySelector('input[value="faculty"]').checked = true;
+            selectedUserType = 'faculty';
+            // Auto advance after short delay
+            setTimeout(function() {
+                group2.classList.remove('active');
+                group3.classList.add('active');
+                step2.classList.remove('active');
+                step3.classList.add('active');
+            }, 500);
+        });
+
+        // Submit feedback
+        submitBtn.addEventListener('click', function() {
+            const comments = document.getElementById('comments').value;
+            
+            // Create feedback object
+            const feedback = {
+                userType: selectedUserType,
+                rating: parseInt(selectedRating),
+                comments,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Save to local storage
+            const feedbackData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+            feedbackData.push(feedback);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(feedbackData));
+            
+            // Reset form and show success message
+            group3.classList.remove('active');
+            group1.classList.add('active');
+            step3.classList.remove('active');
+            step1.classList.add('active');
+            
+            // Reset selections
+            selectedRating = null;
+            selectedUserType = null;
+            if (document.querySelector('input[name="rating"]:checked')) {
+                document.querySelector('input[name="rating"]:checked').checked = false;
+            }
+            
+            // Reset user type selection
+            studentOption.classList.remove('active');
+            facultyOption.classList.remove('active');
+            if (document.querySelector('input[name="user-type"]:checked')) {
+                document.querySelector('input[name="user-type"]:checked').checked = false;
+            }
+            
+            // Clear comments
+            document.getElementById('comments').value = '';
+            
+            // Show success message
+            successMessage.style.display = 'block';
+            
+            // Hide success message after 3 seconds
+            setTimeout(function() {
+                successMessage.style.display = 'none';
+            }, 3000);
+        });
+
+        // Listen for hash changes
+        window.addEventListener('hashchange', checkHash);
+        
+        // Initial hash check
+        checkHash();
+    </script>
+</body>
+</html>
