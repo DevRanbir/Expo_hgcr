@@ -489,15 +489,23 @@
     <!-- Firebase Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
+
+    <script type="module">  
+        // Import the functions you need from the SDKs you need  
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";  
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-analytics.js";  
+    </script>
+
     <script>
         // Initialize Firebase - Replace with your own Firebase config
         const firebaseConfig = {
-            apiKey: "REPLACE_WITH_YOUR_API_KEY",
-            authDomain: "REPLACE_WITH_YOUR_AUTH_DOMAIN",
-            projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
-            storageBucket: "REPLACE_WITH_YOUR_STORAGE_BUCKET",
-            messagingSenderId: "REPLACE_WITH_YOUR_MESSAGING_SENDER_ID",
-            appId: "REPLACE_WITH_YOUR_APP_ID"
+            apiKey: "AIzaSyDu_-vKgWUNDoClzgH7XRU1M7hQAYRUglY",
+            authDomain: "hand-gesture-robotics.firebaseapp.com",
+            projectId: "hand-gesture-robotics", 
+            storageBucket: "hand-gesture-robotics.firebasestorage.app",
+            messagingSenderId: "986492991523", 
+            appId: "1:986492991523:web:8f916810873df3bc52d996",
+            measurementId: "G-XJ05BKFR3E" 
         };
 
         // Initialize Firebase
