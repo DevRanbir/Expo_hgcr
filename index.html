@@ -369,6 +369,30 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Add this to your CSS style section */
+        #fullscreen-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        #fullscreen-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
     </style>
 </head>
 <body>
@@ -377,6 +401,12 @@
             <div class="header">
                 <h1>Hand Gesture Controlled Robotics</h1>
                 <p>Thank you for visiting our expo! Please take a moment to share your feedback.</p>
+                <!-- Add this inside the <header> div, right after the <p> element -->
+                <button id="fullscreen-btn" title="Toggle Fullscreen">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                </button>
             </div>
 
             <div class="card">
@@ -493,6 +523,34 @@
     </script>
 
     <script>
+        // Add this JavaScript at the end of your script section
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                // Enter fullscreen
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.mozRequestFullScreen) { /* Firefox */
+                    document.documentElement.mozRequestFullScreen();
+                } else if (document.documentElement.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) { /* IE/Edge */
+                    document.documentElement.msRequestFullscreen();
+                }
+            } else {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) { /* Firefox */
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) { /* Chrome, Safari & Opera */
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { /* IE/Edge */
+                    document.msExitFullscreen();
+                }
+            }
+        });
         // Initialize Firebase - Replace with your own Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyDu_-vKgWUNDoClzgH7XRU1M7hQAYRUglY",
