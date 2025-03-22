@@ -395,6 +395,47 @@
             transform: translateY(-2px);
         }
 
+        /* Add this to your existing CSS */
+.predefined-comments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.comment-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.comment-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.comment-btn.active {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+/* For mobile responsiveness */
+@media (max-width: 480px) {
+    .predefined-comments {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .comment-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
     </style>
 </head>
 <body>
@@ -453,13 +494,32 @@
                             <input type="radio" name="user-type" value="faculty" required>
                             <span>Faculty</span>
                         </label>
+                        <label class="radio-option" id="cab-option">
+                            <input type="radio" name="user-type" value="cab" required>
+                            <span>CAB Representatives</span>
+                        </label>
+                    </div>
+                    <div class="nav-buttons" style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button class="btn back-btn" id="back-to-step1" style="background-color: #f0f0f0; color: #333;">Back</button>
                     </div>
                 </div>
 
                 <div class="form-group group-3">
-                    <label for="comments">Additional Comments (Optional)</label>
-                    <textarea id="comments" placeholder="Share your thoughts about our project..."></textarea>
-                    <div class="nav-buttons" style="margin-top: 20px;">
+                    <label for="comments">Additional Comments</label>
+                    
+                    <!-- Predefined comment options -->
+                    <div class="predefined-comments" style="margin-bottom: 15px;">
+                        <button type="button" class="comment-btn" data-comment="Excellent project!">Excellent</button>
+                        <button type="button" class="comment-btn" data-comment="Very nice implementation!">Very Nice</button>
+                        <button type="button" class="comment-btn" data-comment="Nice work!">Nice</button>
+                        <button type="button" class="comment-btn" data-comment="Interesting concept.">Interesting</button>
+                        <button type="button" class="comment-btn" data-comment="Needs improvement.">Needs Improvement</button>
+                    </div>
+                    
+                    <!-- Keep the custom textarea for additional comments -->
+                    <textarea id="comments" placeholder="Share your thoughts about our project or select from options above..."></textarea>
+                    
+                    <div class="nav-buttons" style="margin-top: 20px; display: flex; gap: 10px;">
                         <button class="btn" id="submit-btn">Submit Feedback</button>
                     </div>
                 </div>
@@ -493,6 +553,10 @@
                     <div class="stat-card">
                         <h3 id="faculty-count">0</h3>
                         <p>Faculty Responses</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="cab-count">0</h3>
+                        <p>CAB Responses</p>
                     </div>
                 </div>
                 
@@ -565,6 +629,31 @@
             const step1 = document.querySelector('.step-1');
             const step2 = document.querySelector('.step-2');
             const step3 = document.querySelector('.step-3');
+
+
+            // Add this code to your existing JavaScript, just before the submit button event listener
+
+            // Event listeners for predefined comment buttons
+            const commentButtons = document.querySelectorAll('.comment-btn');
+            const commentsTextarea = document.getElementById('comments');
+
+            commentButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Reset all buttons
+                    commentButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Activate clicked button
+                    this.classList.add('active');
+                    
+                    // Set the comment text
+                    commentsTextarea.value = this.getAttribute('data-comment');
+                });
+            });
+
+            // Allow custom editing after selection
+            commentsTextarea.addEventListener('focus', function() {
+                commentButtons.forEach(btn => btn.classList.remove('active'));
+            });
             
             // Form state
             let selectedRating = null;
@@ -597,6 +686,42 @@
                     }
                 }
             });
+
+            // CAB representative option
+            const cabOption = document.getElementById('cab-option');
+            cabOption.addEventListener('click', function() {
+                cabOption.classList.add('active');
+                studentOption.classList.remove('active');
+                facultyOption.classList.remove('active');
+                document.querySelector('input[value="cab"]').checked = true;
+                selectedUserType = 'cab';
+                // Auto advance after short delay
+                setTimeout(function() {
+                    group2.classList.remove('active');
+                    group3.classList.add('active');
+                    step2.classList.remove('active');
+                    step3.classList.add('active');
+                }, 500);
+            });
+
+            // Replace the existing back button event listeners with these updated versions
+
+        // Back buttons
+        document.getElementById('back-to-step1').addEventListener('click', function() {
+            group2.classList.remove('active');
+            group1.classList.add('active');
+            step2.classList.remove('active');
+            step1.classList.add('active');
+            // Don't reset the selection when going back
+        });
+
+        document.getElementById('back-to-step2').addEventListener('click', function() {
+            group3.classList.remove('active');
+            group2.classList.add('active');
+            step3.classList.remove('active');
+            step2.classList.add('active');
+            // Don't reset the selection when going back
+        });
             
             // Check URL hash to show appropriate view
             function checkHash() {
@@ -635,6 +760,9 @@
                         
                         const facultyCount = feedbackData.filter(item => item.userType === 'faculty').length;
                         document.getElementById('faculty-count').textContent = facultyCount;
+
+                        const cabCount = feedbackData.filter(item => item.userType === 'cab').length;
+                        document.getElementById('cab-count').textContent = cabCount;
                         
                         // Populate feedback items
                         const feedbackItemsContainer = document.getElementById('feedback-items');
