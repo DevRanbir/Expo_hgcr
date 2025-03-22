@@ -651,6 +651,17 @@
                 });
             });
 
+            // Add after the existing reset code
+            // Reset star rating visual indicators
+            document.querySelectorAll('.stars label').forEach(label => {
+                // Clear any hover or checked states that might be persisting visually
+            });
+            
+            // Reset comment buttons
+            document.querySelectorAll('.comment-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
             // Allow custom editing after selection
             commentsTextarea.addEventListener('focus', function() {
                 commentButtons.forEach(btn => btn.classList.remove('active'));
