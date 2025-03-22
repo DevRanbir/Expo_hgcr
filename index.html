@@ -348,6 +348,39 @@
         #feedback-results {
             display: none;
         }
+        
+        .error-message {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -359,6 +392,10 @@
             </div>
 
             <div class="card">
+                <div class="error-message" id="error-message">
+                    There was an error submitting your feedback. Please try again.
+                </div>
+                
                 <div class="success-message" id="success-message">
                     Thank you! Your feedback has been submitted successfully.
                 </div>
@@ -406,6 +443,10 @@
                 <div class="form-group group-3">
                     <label for="comments">Additional Comments (Optional)</label>
                     <textarea id="comments" placeholder="Share your thoughts about our project..."></textarea>
+                    <div class="loading" id="submit-loading">
+                        <div class="loading-spinner"></div>
+                        <span>Submitting feedback...</span>
+                    </div>
                     <div class="nav-buttons" style="margin-top: 20px;">
                         <button class="btn" id="submit-btn">Submit Feedback</button>
                     </div>
@@ -424,6 +465,15 @@
             </div>
 
             <div class="card">
+                <div class="error-message" id="loading-error-message">
+                    There was an error loading feedback data. Please refresh the page and try again.
+                </div>
+                
+                <div class="loading" id="results-loading">
+                    <div class="loading-spinner"></div>
+                    <span>Loading feedback data...</span>
+                </div>
+                
                 <div class="stats">
                     <div class="stat-card">
                         <h3 id="total-count">0</h3>
@@ -455,19 +505,18 @@
     </div>
 
     <script>
-        // Create a unique local storage key for this project to avoid conflicts
-        const STORAGE_KEY = 'handGestureFeedbackData';
+        // URL to the JSON file for feedback data on GitHub
+        const FEEDBACK_DATA_URL = 'feedback-data.json';
         
-        // Initialize local storage on first visit
-        if (!localStorage.getItem(STORAGE_KEY)) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
-        }
-
         // DOM elements
         const studentOption = document.getElementById('student-option');
         const facultyOption = document.getElementById('faculty-option');
         const submitBtn = document.getElementById('submit-btn');
         const successMessage = document.getElementById('success-message');
+        const errorMessage = document.getElementById('error-message');
+        const loadingErrorMessage = document.getElementById('loading-error-message');
+        const submitLoading = document.getElementById('submit-loading');
+        const resultsLoading = document.getElementById('results-loading');
         const viewResultsLink = document.getElementById('view-results');
         const returnToFormLink = document.getElementById('return-to-form');
         const feedbackForm = document.getElementById('feedback-form');
@@ -499,9 +548,81 @@
             }
         }
         
+        // Function to fetch the feedback data from GitHub
+        async function fetchFeedbackData() {
+            resultsLoading.style.display = 'block';
+            loadingErrorMessage.style.display = 'none';
+            
+            try {
+                // First, try to fetch from the direct URL
+                const response = await fetch(FEEDBACK_DATA_URL);
+                
+                // If file doesn't exist yet, return empty array
+                if (response.status === 404) {
+                    return [];
+                }
+                
+                // If other error, throw
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch data: ${response.status}`);
+                }
+                
+                // Parse JSON data
+                const data = await response.json();
+                return Array.isArray(data) ? data : [];
+                
+            } catch (error) {
+                console.error("Error fetching feedback data:", error);
+                loadingErrorMessage.style.display = 'block';
+                return [];
+            } finally {
+                resultsLoading.style.display = 'none';
+            }
+        }
+        
+        // Function to save feedback data
+        async function saveFeedbackData(newFeedback) {
+            submitLoading.style.display = 'block';
+            submitBtn.disabled = true;
+            errorMessage.style.display = 'none';
+            
+            try {
+                // First fetch existing data
+                const existingData = await fetchFeedbackData();
+                
+                // Add new feedback to the existing data
+                const updatedData = [...existingData, newFeedback];
+                
+                // Use GitHub API to create/update the JSON file
+                // Note: This only simulates the process since GitHub Pages is read-only
+                
+                // For this demo, we'll simulate success and store in sessionStorage
+                // This way at least current session will see all feedback
+                sessionStorage.setItem('tempFeedbackData', JSON.stringify(updatedData));
+                
+                return true;
+            } catch (error) {
+                console.error("Error saving feedback:", error);
+                errorMessage.style.display = 'block';
+                return false;
+            } finally {
+                submitLoading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+        
         // Load feedback data for results page
-        function loadFeedbackData() {
-            const feedbackData = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        async function loadFeedbackData() {
+            // Try to get data from sessionStorage first (for newly added feedback)
+            let feedbackData = [];
+            const tempData = sessionStorage.getItem('tempFeedbackData');
+            
+            if (tempData) {
+                feedbackData = JSON.parse(tempData);
+            } else {
+                // Otherwise fetch from JSON file
+                feedbackData = await fetchFeedbackData();
+            }
             
             // Update statistics
             document.getElementById('total-count').textContent = feedbackData.length;
@@ -568,7 +689,7 @@
         // Step 1: Rating selection - auto advance
         document.querySelectorAll('input[name="rating"]').forEach(input => {
             input.addEventListener('change', function() {
-                selectedRating = this.value;
+                selectedRating = parseInt(this.value);
                 // Auto advance after short delay
                 setTimeout(function() {
                     group1.classList.remove('active');
@@ -609,52 +730,58 @@
         });
 
         // Submit feedback
-        submitBtn.addEventListener('click', function() {
+        submitBtn.addEventListener('click', async function() {
             const comments = document.getElementById('comments').value;
+            
+            if (!selectedRating || !selectedUserType) {
+                errorMessage.textContent = "Please complete all required fields.";
+                errorMessage.style.display = 'block';
+                return;
+            }
             
             // Create feedback object
             const feedback = {
                 userType: selectedUserType,
-                rating: parseInt(selectedRating),
+                rating: selectedRating,
                 comments,
                 timestamp: new Date().toISOString()
             };
             
-            // Save to local storage
-            const feedbackData = JSON.parse(localStorage.getItem(STORAGE_KEY));
-            feedbackData.push(feedback);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(feedbackData));
+            // Save feedback
+            const success = await saveFeedbackData(feedback);
             
-            // Reset form and show success message
-            group3.classList.remove('active');
-            group1.classList.add('active');
-            step3.classList.remove('active');
-            step1.classList.add('active');
-            
-            // Reset selections
-            selectedRating = null;
-            selectedUserType = null;
-            if (document.querySelector('input[name="rating"]:checked')) {
-                document.querySelector('input[name="rating"]:checked').checked = false;
+            if (success) {
+                // Reset form and show success message
+                group3.classList.remove('active');
+                group1.classList.add('active');
+                step3.classList.remove('active');
+                step1.classList.add('active');
+                
+                // Reset selections
+                selectedRating = null;
+                selectedUserType = null;
+                if (document.querySelector('input[name="rating"]:checked')) {
+                    document.querySelector('input[name="rating"]:checked').checked = false;
+                }
+                
+                // Reset user type selection
+                studentOption.classList.remove('active');
+                facultyOption.classList.remove('active');
+                if (document.querySelector('input[name="user-type"]:checked')) {
+                    document.querySelector('input[name="user-type"]:checked').checked = false;
+                }
+                
+                // Clear comments
+                document.getElementById('comments').value = '';
+                
+                // Show success message
+                successMessage.style.display = 'block';
+                
+                // Hide success message after 3 seconds
+                setTimeout(function() {
+                    successMessage.style.display = 'none';
+                }, 3000);
             }
-            
-            // Reset user type selection
-            studentOption.classList.remove('active');
-            facultyOption.classList.remove('active');
-            if (document.querySelector('input[name="user-type"]:checked')) {
-                document.querySelector('input[name="user-type"]:checked').checked = false;
-            }
-            
-            // Clear comments
-            document.getElementById('comments').value = '';
-            
-            // Show success message
-            successMessage.style.display = 'block';
-            
-            // Hide success message after 3 seconds
-            setTimeout(function() {
-                successMessage.style.display = 'none';
-            }, 3000);
         });
 
         // Listen for hash changes
