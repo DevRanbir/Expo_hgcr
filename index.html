@@ -518,7 +518,7 @@
                         </label>
                         <label class="radio-option" id="cab-option">
                             <input type="radio" name="user-type" value="cab" required>
-                            <span>CAB Representatives</span>
+                            <span>Expo Judge</span>
                         </label>
                     </div>
                     <div class="nav-buttons" style="margin-top: 20px; display: flex; gap: 10px;">
@@ -897,7 +897,7 @@
                 
                 // Create feedback object
                 const feedback = {
-                    userType: selectedUserType,
+                    userType: selectedUserType === 'cab' ? 'Judge' : selectedUserType,
                     rating: selectedRating,
                     comments,
                     timestamp: new Date().toISOString()
